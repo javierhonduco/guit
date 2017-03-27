@@ -26,30 +26,32 @@ def humanize_type(input)
   end
 end
 
-def parse_branch_and_path(splatted, branches)
+def parse_branch_and_path(splatted, branches, default_branch = 'master', default_path = '/')
   # e.g:
   # [master, javier/test, fixes/at/github]
   # [master, fixes/at/github]
 
   # mmmnnnhh not sure this is a good idea or even necessary
-  if splatted == ''
-    return ['master', '/']
-  end
 
-  longest_substring = ''
+  longest_branch = ''
 
   branches.each do |branch|
     current_substring = splatted[branch]
-    if !current_substring.nil? && current_substring.length > longest_substring.length
-      longest_substring = current_substring
+
+    # mmmmnh instead of checking in the ifs
+    next if current_substring.nil?
+
+    if current_substring.length > longest_branch.length
+      longest_branch = current_substring
     end
   end
 
-  branch = longest_substring
-  path = splatted[branch.length..-1]
+  path = splatted[longest_branch.length..-1]
 
   # deharcode defaults
-  [branch || 'master', path || '/']
+  branch = longest_branch.empty? ? default_branch : longest_branch
+  path = path.empty? ? default_path : path
+  [branch, path]
 end
 
 def find_object_tree(repo, root_oid, path_splitted)
@@ -81,6 +83,8 @@ end
 
 get '/:repo/?:type?/?*?' do
   @repo = params[:repo] || 'rails' # TODO: changeme
+  # i don't really understand why is this needed
+  #
   @type = params[:type] || 'tree'
 
   repo = Rugged::Repository.new("#{DEFAULT_REPO_PATH}/#{@repo}")
@@ -108,6 +112,9 @@ get '/:repo/?:type?/?*?' do
     erb :blob
   end
 end
+
+# does not work :( http://localhost:4567/rails/blob/%F0%9F%98%85/guides/bug_report_templates/active_record_migrations_master.rb
+# bc of emojis
 
 __END__
 

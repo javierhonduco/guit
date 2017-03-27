@@ -3,12 +3,36 @@ require 'rugged'
 
 DEFAULT_REPO_PATH = '..'
 
+not_found do
+  '404'
+end
+
+def generate_path_link(paths)
+  link = []
+  paths.each do |path|
+    link << path
+    yield File.join(link), path
+  end
+end
+
+def humanize_type(input)
+  case input
+  when :tree
+    'd'
+  when :blob
+    'f'
+  when :commit
+    'c'
+  end
+end
+
 def parse_branch_and_path(splatted, branches)
   # e.g:
   # [master, javier/test, fixes/at/github]
   # [master, fixes/at/github]
 
-  if splatted == ""
+  # mmmnnnhh not sure this is a good idea or even necessary
+  if splatted == ''
     return ['master', '/']
   end
 
@@ -24,10 +48,11 @@ def parse_branch_and_path(splatted, branches)
   branch = longest_substring
   path = splatted[branch.length..-1]
 
+  # deharcode defaults
   [branch || 'master', path || '/']
 end
 
-def find_object(repo, root_oid, path_splitted)
+def find_object_tree(repo, root_oid, path_splitted)
   current_tree = repo.lookup(root_oid)
   traversed_path = ['/']
 
@@ -40,13 +65,13 @@ def find_object(repo, root_oid, path_splitted)
       if element[:name] == path
         puts "traversing el:#{element[:name]}, type:{element[:type]}"
 
+        # element could be a blob and this would fail.
         current_tree = repo.lookup(element[:oid])
         traversed_path << element[:name]
       end
     end
   end
 
-  puts "entire traversal: #{File.join(traversed_path)}"
   [current_tree, traversed_path]
 end
 
@@ -61,12 +86,18 @@ get '/:repo/?:type?/?*?' do
   repo = Rugged::Repository.new("#{DEFAULT_REPO_PATH}/#{@repo}")
   @branches = repo.branches.each_name(:local).sort
 
-  @branch, path = parse_branch_and_path(params[:splat].first, @branches)
-  puts "this is cools #{@branch}:#{path}"
+  @branch, @path = parse_branch_and_path(params[:splat].first, @branches)
+  puts "this is cools #{@branch}:#{@path}"
 
   root_oid = repo.branches[@branch].target.tree.oid
 
-  object, @traversed = find_object(repo, root_oid, path.split('/'))
+  object, @traversed = find_object_tree(repo, root_oid, @path.split('/'))
+
+  puts "path_split: #{@path}; traversed:#{File.join(@traversed)}"
+  if @path != "#{File.join(@traversed)}/" && @path != "#{File.join(@traversed)}"
+    status 404
+    return
+  end
 
   case object.type
   when :tree
@@ -86,11 +117,19 @@ __END__
 </code>
 
 @@ tree
-<select <% if @branches.size == 1 %> disabled <% end %> onchange="location = '<%= File.join(['/', @repo, @type.to_s]) %>/'+this.value+'<%= File.join(@traversed) %>';">
-  <% @branches.each do |branch| %>
-    <option name="<%= branch %>" <% if branch == @branch %> selected <% end %>><%= branch %></option>
-  <% end %>
-</select>
+<div>
+  <select <% if @branches.size == 1 %> disabled <% end %> onchange="location = '<%= File.join(['/', @repo, @type.to_s]) %>/'+this.value+'<%= File.join(@traversed) %>';">
+    <% @branches.each do |branch| %>
+      <option name="<%= branch %>" <% if branch == @branch %> selected <% end %>><%= branch %></option>
+    <% end %>
+  </select>
+
+    <% generate_path_link(@path.split('/')) do |link, path| %>
+      <a href="<%= File.join(['/', @repo, @type.to_s, @branch, link])%>"><%= path %>/</a>
+    <% end %>
+
+</div>
+
 <ul>
   <% if File.join(@traversed) != '/' %>
     <li>
@@ -101,13 +140,16 @@ __END__
   <% end %>
   <% @tree.each do |element| %>
     <li>
-      <% unless element[:type] == :commit %>
-        <a href="<%= File.join(['/', @repo, element[:type].to_s, @branch, @traversed, element[:name]]) %>">
-      <% end %>
-      <%= element[:name] %>
-      <% unless element[:type] == :commit %>
-        </a>
-      <% end %>
+      <code>
+        <%= humanize_type(element[:type]) %>
+        <% unless element[:type] == :commit %>
+          <a href="<%= File.join(['/', @repo, element[:type].to_s, @branch, @traversed, element[:name]]) %>">
+        <% end %>
+        <%= element[:name] %>
+        <% unless element[:type] == :commit %>
+          </a>
+        <% end %>
+      </code>
     </li>
   <% end %>
 </ul>

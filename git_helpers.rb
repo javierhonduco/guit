@@ -3,8 +3,6 @@ def parse_branch_and_path(splatted, branches, default_branch = 'master', default
   # [master, javier/test, fixes/at/github]
   # [master, fixes/at/github]
 
-  # mmmnnnhh not sure this is a good idea or even necessary
-
   longest_branch = ''
 
   branches.each do |branch|

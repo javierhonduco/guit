@@ -18,10 +18,11 @@ class Guit < Sinatra::Base
     '<a href="/rails">go to rails</a>'
   end
 
+  # does not work :( http://localhost:4567/rails/blob/%F0%9F%98%85/guides/bug_report_templates/active_record_migrations_master.rb
+  # bc of emojis
   get '/:repo/?:type?/?*?' do
     @repo = params[:repo] || 'rails' # TODO: changeme
     # i don't really understand why is this needed
-    #
     @type = params[:type] || 'tree'
 
     repo = Rugged::Repository.new("#{DEFAULT_REPO_PATH}/#{@repo}")
@@ -50,6 +51,3 @@ class Guit < Sinatra::Base
     end
   end
 end
-
-# does not work :( http://localhost:4567/rails/blob/%F0%9F%98%85/guides/bug_report_templates/active_record_migrations_master.rb
-# bc of emojis

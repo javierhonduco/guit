@@ -7,3 +7,7 @@ group :development do
   # on OSX
   gem 'rb-fsevent'
 end
+
+group :test do
+  gem 'minitest'
+end

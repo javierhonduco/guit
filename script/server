@@ -1,3 +1,3 @@
 #!/bin/bash
 
-rerun 'ruby app.rb'
+rerun 'rackup -p 4567'

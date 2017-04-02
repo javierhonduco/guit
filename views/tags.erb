@@ -1,7 +1,9 @@
 <ul>
-  <% @tags.each do |tag| %>
+  <% @tags.reverse_each do |tag| %>
     <code>
-      <li><%= tag.name %></li>
+      <a href="<%= File.join(['/', @repo, 'tree', tag.name.split('/').last]) %>">
+        <li><%= tag.name.split('/').last %></li>
+      </a>
     </code>
   <% end %>
 </ul>

@@ -18,9 +18,9 @@ def parse_branch_and_path(splatted, branches, default_branch = 'master', default
 
   path = splatted[longest_branch.length..-1]
 
-  # deharcode defaults
   branch = longest_branch.empty? ? default_branch : longest_branch
   path = path.empty? ? default_path : path
+
   [branch, path]
 end
 
@@ -28,11 +28,11 @@ def find_object_tree(repo, root_oid, path_splitted)
   current_tree = repo.lookup(root_oid)
   traversed_path = ['/']
 
+  # This is CPU & IO heavy. We are not caching as it
+  # introduces more complexity and the benefit in this
+  # particular case is not as big.
   path_splitted.each do |path|
     current_tree.each do |element|
-      # Subrepos are problematic
-      # And this is CPU & IO heavy. Cache me maybe?
-      # problems: cache should be invalidates on force pushes and...?
       next unless element[:name] == path
 
       current_tree = repo.lookup(element[:oid])

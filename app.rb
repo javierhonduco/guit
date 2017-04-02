@@ -33,14 +33,13 @@ class Guit < Sinatra::Base
     @branch   = repo.branch_from_url(params[:splat].first)
     @path     = repo.path_from_url(params[:splat].first)
     @tags     = repo.tags
+    @commits  = repo.commits
     @object, @traversed = repo.find_object_by_path(@path.split('/'), @branch)
 
     # Checks if the requested url exists
     # many bugs here
     whole_path = File.join(@traversed)
-    puts "040"
-    puts "#{@path}"
-    puts "#{whole_path}"
+    puts "#{whole_path}, #{@path}"
     if @path != whole_path && @path != "#{whole_path}/"
       status 404
       return

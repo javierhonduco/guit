@@ -22,15 +22,28 @@ class GuitModel
     repo.references.each('refs/tags/*')
   end
 
+  def references_names
+    local_branches + tags.map { |tag| tag.name.split('/').last }
+  end
+
   def parse_url(url)
-    @parse_url ||= parse_branch_and_path(url,local_branches)
+    @parse_url ||= parse_branch_and_path(url, references_names)
   end
 
-  def oid_for_branch(branch)
-     repo.branches[branch].target.tree.oid
+  def oid_for_object(object)
+    object = repo.references.each("*/*/#{object}").first.target
+
+    if object.type == :tag
+      object.target.tree.oid
+    else
+      object.tree.oid
+    end
   end
 
-  def find_object_by_path(path, branch)
-    find_object_tree(repo, oid_for_branch(branch), path)
+  def find_object_by_path(path, object)
+    find_object_tree(repo, oid_for_object(object), path)
+  end
+
+  def commits
   end
 end

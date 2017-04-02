@@ -1,9 +1,3 @@
-require 'sinatra/base'
-require 'rugged'
-require './config'
-require './helpers'
-require './git_helpers'
-
 class Guit < Sinatra::Base
   not_found do
     '404'
@@ -18,25 +12,23 @@ class Guit < Sinatra::Base
     erb :index
   end
 
-  # does not work :( http://localhost:4567/rails/blob/%F0%9F%98%85/guides/bug_report_templates/active_record_migrations_master.rb
-  # bc of emojis
+  # Does not work because of emojis :(
+  #   http://localhost:4567/rails/blob/%F0%9F%98%85/guides/bug_report_templates/active_record_migrations_master.rb
   get '/:repo/?:type?/?*?' do
     @repo = params[:repo] || 'rails' # TODO: changeme
-    # i don't really understand why is this needed
     @type = params[:type] || 'tree'
 
-    repo = Rugged::Repository.new("#{DEFAULT_REPO_PATH}/#{@repo}")
-    @branches = repo.branches.each_name(:local).sort
+    repo = GuitModel.new(@repo)
+    @branches = repo.local_branches
+    @branch   = repo.branch_from_url(params[:splat].first)
+    @path     = repo.path_from_url(params[:splat].first)
+    @tags     = repo.tags
+    object, @traversed = repo.find_object_by_path(@path.split('/'), @branch)
 
-    @branch, @path = parse_branch_and_path(params[:splat].first, @branches)
-
-    root_oid = repo.branches[@branch].target.tree.oid
-
-    object, @traversed = find_object_tree(repo, root_oid, @path.split('/'))
-    @tags = repo.references.each('refs/tags/*')
-
-    puts "path_split: #{@path}; traversed:#{File.join(@traversed)}"
-    if @path != "#{File.join(@traversed)}/" && @path != "#{File.join(@traversed)}"
+    # Checks if the requested url exists
+    # many bugs here
+    whole_path = File.join(@traversed)
+    if @path != whole_path && @path != "#{whole_path}/"
       status 404
       return
     end

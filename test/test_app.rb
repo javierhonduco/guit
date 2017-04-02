@@ -1,5 +1,12 @@
 require_relative './test_helper'
-require_relative '../app'
+# TODO: reduce requires duplication
+require 'sinatra/base'
+require 'rugged'
+require './config'
+require './helpers'
+require './git_helpers'
+require './model'
+require './app'
 require 'rack/test'
 
 class TestHelpers < Minitest::Test

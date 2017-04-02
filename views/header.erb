@@ -10,6 +10,6 @@
   </a>
 
   <% generate_path_link(@path.split('/')) do |link, path| %>
-    <a href="<%= File.join(['/', @repo, @type.to_s, @branch, link])%>"><%= path %>/</a>
+    <a href="<%= File.join(['/', @repo, @type.to_s, @branch, link])%>">/<%= path %><%= @object.type == :blob ? '' : '/' %></a>
   <% end %>
 </div>

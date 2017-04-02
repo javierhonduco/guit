@@ -12,6 +12,16 @@ class Guit < Sinatra::Base
     erb :index
   end
 
+  get '/:repo/tags/?:tag?' do
+    @repo = params[:repo]
+
+    repo  = GuitModel.new(@repo)
+    @tags = repo.tags
+
+    erb :tags
+  end
+
+
   # Does not work because of emojis :(
   #   http://localhost:4567/rails/blob/%F0%9F%98%85/guides/bug_report_templates/active_record_migrations_master.rb
   get '/:repo/?:type?/?*?' do
@@ -23,7 +33,7 @@ class Guit < Sinatra::Base
     @branch   = repo.branch_from_url(params[:splat].first)
     @path     = repo.path_from_url(params[:splat].first)
     @tags     = repo.tags
-    object, @traversed = repo.find_object_by_path(@path.split('/'), @branch)
+    @object, @traversed = repo.find_object_by_path(@path.split('/'), @branch)
 
     # Checks if the requested url exists
     # many bugs here
@@ -36,17 +46,13 @@ class Guit < Sinatra::Base
       return
     end
 
-    if @type == 'tags'
-      erb :tags
-    else
-      case object.type
-      when :tree
-        @tree = object
-        erb :tree
-      when :blob
-        @blob = object
-        erb :blob
-      end
+    case @object.type
+    when :tree
+      @tree = @object
+      erb :tree
+    when :blob
+      @blob = @object
+      erb :blob
     end
   end
 end

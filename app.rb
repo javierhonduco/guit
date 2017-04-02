@@ -15,7 +15,7 @@ class Guit < Sinatra::Base
   end
 
   get '/' do
-    '<a href="/rails">go to rails</a>'
+    erb :index
   end
 
   # does not work :( http://localhost:4567/rails/blob/%F0%9F%98%85/guides/bug_report_templates/active_record_migrations_master.rb
@@ -29,11 +29,11 @@ class Guit < Sinatra::Base
     @branches = repo.branches.each_name(:local).sort
 
     @branch, @path = parse_branch_and_path(params[:splat].first, @branches)
-    puts "this is cools #{@branch}:#{@path}"
 
     root_oid = repo.branches[@branch].target.tree.oid
 
     object, @traversed = find_object_tree(repo, root_oid, @path.split('/'))
+    @tags = repo.references.each('refs/tags/*')
 
     puts "path_split: #{@path}; traversed:#{File.join(@traversed)}"
     if @path != "#{File.join(@traversed)}/" && @path != "#{File.join(@traversed)}"
@@ -41,13 +41,17 @@ class Guit < Sinatra::Base
       return
     end
 
-    case object.type
-    when :tree
-      @tree = object
-      erb :tree
-    when :blob
-      @blob = object
-      erb :blob
+    if @type == 'tags'
+      erb :tags
+    else
+      case object.type
+      when :tree
+        @tree = object
+        erb :tree
+      when :blob
+        @blob = object
+        erb :blob
+      end
     end
   end
 end

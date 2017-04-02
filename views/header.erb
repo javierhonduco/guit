@@ -1,0 +1,15 @@
+<div>
+  <select <% if @branches.size == 1 %> disabled <% end %> onchange="location = '<%= File.join(['/', @repo, @type.to_s]) %>/'+this.value+'<%= File.join(@traversed) %>';">
+    <% @branches.each do |branch| %>
+      <option name="<%= branch %>" <% if branch == @branch %> selected <% end %>><%= branch %></option>
+    <% end %>
+  </select>
+
+  <a href="<%= File.join(['/', @repo, 'tags']) %>">
+    <%= @tags.inject(0) { |a, b| a+=1 } %> tags
+  </a>
+
+  <% generate_path_link(@path.split('/')) do |link, path| %>
+    <a href="<%= File.join(['/', @repo, @type.to_s, @branch, link])%>"><%= path %>/</a>
+  <% end %>
+</div>

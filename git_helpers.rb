@@ -28,18 +28,19 @@ def find_object_tree(repo, root_oid, path_splitted)
   current_tree = repo.lookup(root_oid)
   traversed_path = ['/']
 
-  # we are not checking if we found the searched element
   path_splitted.each do |path|
     current_tree.each do |element|
       # Subrepos are problematic
       # And this is CPU & IO heavy. Cache me maybe?
       # problems: cache should be invalidates on force pushes and...?
-      if element[:name] == path
-        puts "traversing el:#{element[:name]}, type:{element[:type]}"
+      next unless element[:name] == path
 
-        # element could be a blob and this would fail.
-        current_tree = repo.lookup(element[:oid])
-        traversed_path << element[:name]
+      current_tree = repo.lookup(element[:oid])
+      traversed_path << element[:name]
+
+      # We have reached the end
+      if current_tree.type == :blob
+        return [current_tree, traversed_path]
       end
     end
   end

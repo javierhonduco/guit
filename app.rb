@@ -28,6 +28,9 @@ class Guit < Sinatra::Base
     # Checks if the requested url exists
     # many bugs here
     whole_path = File.join(@traversed)
+    puts "040"
+    puts "#{@path}"
+    puts "#{whole_path}"
     if @path != whole_path && @path != "#{whole_path}/"
       status 404
       return

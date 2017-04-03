@@ -12,7 +12,7 @@
   <% @tree.each do |element| %>
     <li>
       <code>
-        <%= humanize_type(element[:type]) %>
+        <%= Guit::Helpers::Html.humanize_type(element[:type]) %>
         <% unless element[:type] == :commit %>
           <a href="<%= File.join(['/', @repo, element[:type].to_s, @branch, @traversed, element[:name]]) %>">
         <% end %>

@@ -1,19 +1,18 @@
 require_relative './test_helper'
-# TODO: reduce requires duplication
+require 'rack/test'
 require 'sinatra/base'
 require 'rugged'
+# TODO: reduce requires duplication
 require './config'
-require './helpers'
-require './git_helpers'
-require './model'
 require './app'
-require 'rack/test'
+require './helpers/helpers'
+require './models/repo'
 
 class TestHelpers < Minitest::Test
   include Rack::Test::Methods
 
   def app
-    Guit
+    Guit::App
   end
 
   def test_ultra_super_mega_basic

@@ -1,7 +1,9 @@
 require_relative './test_helper'
-require_relative '../helpers.rb'
+require_relative '../helpers/html_helpers.rb'
 
 class TestHelpers < Minitest::Test
+  include Guit::Helpers::Html
+
   def test_humanize_git_type
     assert_equal 'd', humanize_type(:tree)
     assert_equal 'f', humanize_type(:blob)

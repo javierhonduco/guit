@@ -1,7 +1,9 @@
 require_relative './test_helper'
-require_relative '../git_helpers.rb'
+require_relative '../helpers/git_helpers.rb'
 
 class TestGitHelpers < Minitest::Test
+  include Guit::Helpers::Git
+
   def test_parse_branch_basic
     splatted = 'master/activesupport/README.rdoc'
     branches = ['master']
